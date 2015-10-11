@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent" android:layout_height="wrap_content"
+    android:background="#FF9227">
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ivContorno"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:src="@drawable/bg_temperature"
+        android:paddingTop="8dp"
+        android:paddingBottom="8dp"
+        android:layout_marginLeft="10dp" />
+
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:id="@+id/ivIconoDia"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/ivContorno"
+        android:layout_toEndOf="@+id/ivContorno"
+        android:src="@drawable/clear_day" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Miercoles"
+        android:id="@+id/tvNombreDia"
+        android:layout_centerVertical="true"
+        android:layout_toRightOf="@+id/ivIconoDia"
+        android:layout_toEndOf="@+id/ivIconoDia"
+        android:textColor="#FFFFFF"
+        android:textSize="24sp"
+        android:layout_marginLeft="10dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="100"
+        android:id="@+id/tvTemperaturaDia"
+        android:layout_alignBottom="@+id/ivContorno"
+        android:layout_alignLeft="@+id/ivContorno"
+        android:layout_alignTop="@+id/ivContorno"
+        android:layout_alignRight="@+id/ivContorno"
+        android:gravity="center" />
+</RelativeLayout>

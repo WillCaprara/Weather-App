@@ -1,4 +1,4 @@
-package models;
+package models.clima;
 
 import com.example.will.clima.R;
 
@@ -6,10 +6,12 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
 
+import models.Forecast;
+
 /**
  * Created by Will on 9/26/2015.
  */
-public class ClimaActual {
+public class Actual {
     private double humedad;
     private double temperatura;
     private String localizacion;
@@ -75,33 +77,8 @@ public class ClimaActual {
     }
 
     //Metodos para configurar mis imagenes
-    public int getImagenId(){
-        int idImagen = R.drawable.clear_day;
-
-        switch (icono){
-            case "clear-day": idImagen = R.drawable.clear_day;
-                break;
-            case "clear-night": idImagen = R.drawable.clear_night;
-                break;
-            case "rain": idImagen = R.drawable.rain;
-                break;
-            case "snow": idImagen = R.drawable.snow;
-                break;
-            case "sleet": idImagen = R.drawable.sleet;
-                break;
-            case "wind": idImagen = R.drawable.wind;
-                break;
-            case "fog": idImagen = R.drawable.fog;
-                break;
-            case "cloudy": idImagen = R.drawable.cloudy;
-                break;
-            case "partly-cloudy-day": idImagen = R.drawable.partly_cloudy;
-                break;
-            case "partly-cloudy-night": idImagen = R.drawable.cloudy_night;
-                break;
-        }
-
-        return idImagen;
+    public int getImagenId(String icono){
+        return Forecast.getImagenId(icono);
     }
 
     public String formatTime(){

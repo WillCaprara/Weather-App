@@ -6,4 +6,5 @@
     <string name="titulo_ventana">Oops! Sucedio un error!</string>
     <string name="mensaje_ventana">Ha ocurrido un error durante la ejecucion</string>
     <string name="texto_boton_ventana">Ok</string>
+    <string name="title_activity_dias_forecast">DiasForecastActivity</string>
 </resources>

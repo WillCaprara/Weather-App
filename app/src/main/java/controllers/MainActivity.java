@@ -1,13 +1,14 @@
 package controllers;
 
-import android.app.FragmentManager;
 import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
 import android.widget.ImageView;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -18,22 +19,22 @@ import com.squareup.okhttp.OkHttpClient;
 import com.squareup.okhttp.Request;
 import com.squareup.okhttp.Response;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.TimeZone;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
-import models.ClimaActual;
+import models.clima.Actual;
 import models.VentanaAlerta;
+import models.clima.Dia;
+import models.clima.Hora;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
-    private ClimaActual climaActual;
+    private Actual actual;
 
     /*ImageView ivIcono;
     TextView tvLocalizacion;
@@ -50,6 +51,8 @@ public class MainActivity extends AppCompatActivity {
     @Bind(R.id.tvHumedadValor) TextView tvHumedadValor;
     @Bind(R.id.tvProbabilidadValor) TextView tvProbabilidadValor;
     @Bind(R.id.tvResumen) TextView tvResumen;
+    @Bind(R.id.ivActualizar) ImageView ivActualizar;
+    @Bind(R.id.pbActualizar) ProgressBar pbActualizar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,21 +60,28 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
 
-        /*ivIcono = (ImageView) findViewById(R.id.ivIcono);
-        tvLocalizacion = (TextView) findViewById(R.id.tvLocalizacion);
-        tvTiempo = (TextView) findViewById(R.id.tvTiempo);
-        tvGrados = (TextView) findViewById(R.id.tvGrados);
-        tvHumedadValor = (TextView) findViewById(R.id.tvHumedadValor);
-        tvProbabilidadValor = (TextView) findViewById(R.id.tvProbabilidadValor);
-        tvResumen = (TextView) findViewById(R.id.tvResumen);*/
+        final double latitud = 37.8267;
+        final double longitud = -122.423;
 
+        pbActualizar.setVisibility(View.INVISIBLE);
+
+        ivActualizar.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                obtenerForecast(latitud, longitud);
+            }
+        });
+
+        obtenerForecast(latitud, longitud);
+    }
+
+    private void obtenerForecast(double latitud, double longitud) {
         String apiKey = "8dad74e58f4f47a4925bd01cebf810ca";
-        double latitud = 37.8267;
-        //double latitud = 9999;
-        double longitud = -122.423;
         String forecast = "https://api.forecast.io/forecast/" + apiKey + "/" + latitud + "," + longitud;
 
         if(redDisponible()){
+            verificaProgressBar();
+
             OkHttpClient client = new OkHttpClient();
             Request request = new Request.Builder().url(forecast).build();
 
@@ -80,29 +90,33 @@ public class MainActivity extends AppCompatActivity {
             call.enqueue(new Callback() {
                 @Override
                 public void onFailure(Request request, IOException e) {
-
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            verificaProgressBar();
+                        }
+                    });
                 }
 
                 @Override
                 public void onResponse(Response response) throws IOException {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            verificaProgressBar();
+                        }
+                    });
+
                     try{
                         if(response.isSuccessful()){
                             String responseJsonString = response.body().string();
-                            climaActual = obtenerClimaActual(responseJsonString);
+                            actual = obtenerClimaActual(responseJsonString);
 
                             //Programacion asincrona, sin este new Runnable no funcionaria
                             runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
-                                    ivIcono.setImageResource(climaActual.getImagenId());
-                                    tvLocalizacion.setText(climaActual.getLocalizacion());
-
-                                    tvTiempo.setText(climaActual.formatTime());
-
-                                    tvGrados.setText(String.valueOf(climaActual.getTemperatura()));
-                                    tvHumedadValor.setText(String.valueOf(climaActual.getHumedad()));
-                                    tvProbabilidadValor.setText(String.valueOf(climaActual.getProbabilidad()));
-                                    tvResumen.setText(climaActual.getResumen());
+                                    actualizaInformacion();
                                 }
                             });
 
@@ -125,30 +139,88 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void actualizaInformacion(){
+        ivIcono.setImageResource(actual.getImagenId(actual.getIcono()));
+        tvLocalizacion.setText(actual.getLocalizacion());
+        tvTiempo.setText(actual.formatTime());
+        tvGrados.setText(String.valueOf(actual.getTemperatura()));
+        tvHumedadValor.setText(String.valueOf(actual.getHumedad()));
+        tvProbabilidadValor.setText(String.valueOf(actual.getProbabilidad()));
+        tvResumen.setText(actual.getResumen());
+    }
+
     //El throws JSONException indica que la excepcion se maneja desde donde se llamo el metodo obtnerClimaActual.
     //Si no tuvieramos el throws JSONException, se tendria que poner un bloque try/catch en el metodo obtenerClimaActual
-    private ClimaActual obtenerClimaActual(String responseJsonString) throws JSONException{
+    private Actual obtenerClimaActual(String responseJsonString) throws JSONException{
         JSONObject responseJsonObject = new JSONObject(responseJsonString);
         JSONObject currentWeatherInfo = responseJsonObject.getJSONObject("currently");
 
-        climaActual = new ClimaActual();
+        actual = new Actual();
 
-        climaActual.setIcono(currentWeatherInfo.getString("icon"));
-        climaActual.setLocalizacion(responseJsonObject.getString("timezone"));
+        actual.setIcono(currentWeatherInfo.getString("icon"));
+        actual.setLocalizacion(responseJsonObject.getString("timezone"));
 
         long timeStampFromService = currentWeatherInfo.getLong("time");
         long javaTimeStamp = timeStampFromService * 1000L;
         //Date date = new Date(javaTimeStamp);
 
-        climaActual.setTiempo(javaTimeStamp);
+        actual.setTiempo(javaTimeStamp);
         //tvTiempo.setText("Son las: " + new SimpleDateFormat("hh:mm").format(date));
 
-        climaActual.setTemperatura(currentWeatherInfo.getDouble("temperature"));
-        climaActual.setHumedad(currentWeatherInfo.getDouble("humidity"));
-        climaActual.setProbabilidad(currentWeatherInfo.getDouble("precipProbability"));
-        climaActual.setResumen(currentWeatherInfo.getString("summary"));
+        actual.setTemperatura(currentWeatherInfo.getDouble("temperature"));
+        actual.setHumedad(currentWeatherInfo.getDouble("humidity"));
+        actual.setProbabilidad(currentWeatherInfo.getDouble("precipProbability"));
+        actual.setResumen(currentWeatherInfo.getString("summary"));
 
-        return climaActual;
+        return actual;
+    }
+
+    public Dia[] obtenerDiasForecast(String jsonResult) throws JSONException{
+        JSONObject forecast = new JSONObject(jsonResult);
+        JSONObject dias = forecast.getJSONObject("daily");
+        JSONArray diasData = dias.getJSONArray("data");
+
+        Dia[] diasArray = new Dia[diasData.length()];
+
+        for(int i = 0; i < diasData.length(); i++){
+            JSONObject currentDia = diasData.getJSONObject(i);
+
+            Dia dia = new Dia();
+
+            dia.setTiempo(currentDia.getLong("time"));
+            dia.setIcono(currentDia.getString("icon"));
+            dia.setLocalizacion(forecast.getString("timezone"));
+            dia.setTemperaturaMaxima(currentDia.getDouble("temperatureMax"));
+            dia.setResumen(currentDia.getString("summary"));
+
+            diasArray[i] = dia;
+        }
+
+        return diasArray;
+    }
+
+    public Hora[] obtenerHoras(String jsonData) throws JSONException{
+        JSONObject forecast = new JSONObject(jsonData);
+        JSONObject horas = forecast.getJSONObject("hourly");
+        JSONArray horasData = horas.getJSONArray("data");
+
+        Hora[] horasArray = new Hora[horasData.length()];
+
+        for (int i = 0; i < horasData.length(); i++){
+            JSONObject currentHora = horasData.getJSONObject(i);
+
+            Hora hora = new Hora();
+
+            hora.setLocalizacion(forecast.getString("timezone"));
+            hora.setResumen(currentHora.getString("summary"));
+            hora.setIcono(currentHora.getString("icon"));
+            hora.setTiempo(currentHora.getLong("time"));
+            hora.setTemperatura(currentHora.getDouble("temperature"));
+
+            horasArray[i] = hora;
+        }
+
+        return horasArray;
     }
 
     private boolean redDisponible() {
@@ -168,5 +240,16 @@ public class MainActivity extends AppCompatActivity {
         VentanaAlerta ventanaAlerta = new VentanaAlerta();
 
         ventanaAlerta.show(getFragmentManager(), "My dialog");
+    }
+
+    private void verificaProgressBar(){
+        if(pbActualizar.getVisibility() == View.INVISIBLE){
+            pbActualizar.setVisibility(View.VISIBLE);
+            ivActualizar.setVisibility(View.INVISIBLE);
+        }
+        else{
+            pbActualizar.setVisibility(View.INVISIBLE);
+            ivActualizar.setVisibility(View.VISIBLE);
+        }
     }
 }
