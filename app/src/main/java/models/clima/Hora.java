@@ -1,7 +1,5 @@
 package models.clima;
 
-import models.Forecast;
-
 /**
  * Created by Will on 10/10/2015.
  */
@@ -40,7 +38,7 @@ public class Hora {
         return icono;
     }
 
-    public int getImagenId(String icono){
+    public int getImagenId(){
         return Forecast.getImagenId(icono);
     }
 

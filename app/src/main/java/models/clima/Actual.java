@@ -1,12 +1,8 @@
 package models.clima;
 
-import com.example.will.clima.R;
-
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
-
-import models.Forecast;
 
 /**
  * Created by Will on 9/26/2015.
@@ -77,7 +73,7 @@ public class Actual {
     }
 
     //Metodos para configurar mis imagenes
-    public int getImagenId(String icono){
+    public int getImagenId(){
         return Forecast.getImagenId(icono);
     }
 

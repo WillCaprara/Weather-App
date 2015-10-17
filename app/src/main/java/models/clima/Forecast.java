@@ -1,4 +1,4 @@
-package models;
+package models.clima;
 
 import com.example.will.clima.R;
 
@@ -10,15 +10,15 @@ import models.clima.Hora;
  * Created by Will on 10/10/2015.
  */
 public class Forecast {
-    private Actual[] actual;
+    private Actual actual;
     private Dia[] dias;
     private Hora[] horas;
 
-    public Actual[] getActual() {
+    public Actual getActual() {
         return actual;
     }
 
-    public void setActual(Actual[] actual) {
+    public void setActual(Actual actual) {
         this.actual = actual;
     }
 

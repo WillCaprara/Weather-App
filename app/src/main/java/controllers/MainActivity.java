@@ -1,6 +1,7 @@
 package controllers;
 
 import android.content.Context;
+import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.support.v7.app.AppCompatActivity;
@@ -27,22 +28,18 @@ import java.io.IOException;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 import models.clima.Actual;
 import models.VentanaAlerta;
 import models.clima.Dia;
+import models.clima.Forecast;
 import models.clima.Hora;
 
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
-    private Actual actual;
+    public static final String DIAS_FORECAST = "DIAS_FORECAST";
 
-    /*ImageView ivIcono;
-    TextView tvLocalizacion;
-    TextView tvTiempo;
-    TextView tvGrados;
-    TextView tvHumedadValor;
-    TextView tvProbabilidadValor;
-    TextView tvResumen;*/
+    private Forecast forecast;
 
     @Bind(R.id.ivIcono) ImageView ivIcono;
     @Bind(R.id.tvLocalizacion) TextView tvLocalizacion;
@@ -75,15 +72,23 @@ public class MainActivity extends AppCompatActivity {
         obtenerForecast(latitud, longitud);
     }
 
+    @OnClick(R.id.btnDias)
+    public void empezarDias(View view){
+        //Crear un intento. Primer parametro: En que contexto vas a abrir la pantalla; Segundo Parametro: Que clase/pantalla vas a abrir
+        Intent intent = new Intent(this, DiasForecastActivity.class);
+        intent.putExtra(DIAS_FORECAST, forecast.getDias());
+        startActivity(intent);
+    }
+
     private void obtenerForecast(double latitud, double longitud) {
         String apiKey = "8dad74e58f4f47a4925bd01cebf810ca";
-        String forecast = "https://api.forecast.io/forecast/" + apiKey + "/" + latitud + "," + longitud;
+        final String forecastApi = "https://api.forecast.io/forecast/" + apiKey + "/" + latitud + "," + longitud;
 
         if(redDisponible()){
             verificaProgressBar();
 
             OkHttpClient client = new OkHttpClient();
-            Request request = new Request.Builder().url(forecast).build();
+            Request request = new Request.Builder().url(forecastApi).build();
 
             Call call = client.newCall(request);
 
@@ -110,7 +115,7 @@ public class MainActivity extends AppCompatActivity {
                     try{
                         if(response.isSuccessful()){
                             String responseJsonString = response.body().string();
-                            actual = obtenerClimaActual(responseJsonString);
+                            forecast = obtenerDatosApp(responseJsonString);
 
                             //Programacion asincrona, sin este new Runnable no funcionaria
                             runOnUiThread(new Runnable() {
@@ -140,7 +145,9 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void actualizaInformacion(){
-        ivIcono.setImageResource(actual.getImagenId(actual.getIcono()));
+        Actual actual = forecast.getActual();
+
+        ivIcono.setImageResource(actual.getImagenId());
         tvLocalizacion.setText(actual.getLocalizacion());
         tvTiempo.setText(actual.formatTime());
         tvGrados.setText(String.valueOf(actual.getTemperatura()));
@@ -149,13 +156,23 @@ public class MainActivity extends AppCompatActivity {
         tvResumen.setText(actual.getResumen());
     }
 
+    public Forecast obtenerDatosApp(String jsonInformacion) throws JSONException{
+        Forecast forecast = new Forecast();
+
+        forecast.setActual(obtenerClimaActual(jsonInformacion));
+        forecast.setDias(obtenerDiasForecast(jsonInformacion));
+        forecast.setHoras(obtenerHorasForecast(jsonInformacion));
+
+        return forecast;
+    }
+
     //El throws JSONException indica que la excepcion se maneja desde donde se llamo el metodo obtnerClimaActual.
     //Si no tuvieramos el throws JSONException, se tendria que poner un bloque try/catch en el metodo obtenerClimaActual
     private Actual obtenerClimaActual(String responseJsonString) throws JSONException{
         JSONObject responseJsonObject = new JSONObject(responseJsonString);
         JSONObject currentWeatherInfo = responseJsonObject.getJSONObject("currently");
 
-        actual = new Actual();
+        Actual actual = new Actual();
 
         actual.setIcono(currentWeatherInfo.getString("icon"));
         actual.setLocalizacion(responseJsonObject.getString("timezone"));
@@ -199,7 +216,7 @@ public class MainActivity extends AppCompatActivity {
         return diasArray;
     }
 
-    public Hora[] obtenerHoras(String jsonData) throws JSONException{
+    public Hora[] obtenerHorasForecast(String jsonData) throws JSONException{
         JSONObject forecast = new JSONObject(jsonData);
         JSONObject horas = forecast.getJSONObject("hourly");
         JSONArray horasData = horas.getJSONArray("data");
