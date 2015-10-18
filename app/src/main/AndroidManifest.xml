@@ -27,6 +27,10 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="controllers.MainActivity" />
         </activity>
+        <activity
+            android:name="controllers.HorasForecastActivity"
+            android:label="@string/title_activity_horas_forecast" >
+        </activity>
     </application>
 
 </manifest>

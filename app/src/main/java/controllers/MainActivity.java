@@ -38,6 +38,7 @@ import models.clima.Hora;
 public class MainActivity extends AppCompatActivity {
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String DIAS_FORECAST = "DIAS_FORECAST";
+    public static final String HORAS_FORECAST = "HORAS_FORECAST";
 
     private Forecast forecast;
 
@@ -77,6 +78,14 @@ public class MainActivity extends AppCompatActivity {
         //Crear un intento. Primer parametro: En que contexto vas a abrir la pantalla; Segundo Parametro: Que clase/pantalla vas a abrir
         Intent intent = new Intent(this, DiasForecastActivity.class);
         intent.putExtra(DIAS_FORECAST, forecast.getDias());
+        startActivity(intent);
+    }
+
+    @OnClick(R.id.btnHoras)
+    public void empezarHoras(View view){
+        //Crear un intento
+        Intent intent = new Intent(this, HorasForecastActivity.class);
+        intent.putExtra(HORAS_FORECAST, forecast.getHoras());
         startActivity(intent);
     }
 
